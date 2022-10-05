@@ -52,7 +52,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' ={
                 scalerAddress: '${scalerUrl}:80'
                 graintype: 'sensortwin'
                 siloNameFilter: 'silo'
-                upperbound: '300'
+                upperbound: '100'
               }
             }
           }
