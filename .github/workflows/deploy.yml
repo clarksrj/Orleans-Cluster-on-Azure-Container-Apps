@@ -49,7 +49,7 @@ jobs:
           echo "Creating resource group in Azure"
           echo "Executing 'az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}'"
 
-      #    az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}
+          az group create -l ${{ env.REGION }} -n ${{ env.RESOURCE_GROUP_NAME }}
 
     - name: Creating resources
       uses: azure/CLI@v1
@@ -58,7 +58,7 @@ jobs:
           echo "Creating resources"
           echo "Executing az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug"
 
-       #   az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
+          az deployment group create --resource-group ${{ env.RESOURCE_GROUP_NAME }} --template-file '/github/workspace/Azure/main.bicep' --debug
 
   build:
     runs-on: ubuntu-latest
