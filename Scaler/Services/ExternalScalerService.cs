@@ -43,7 +43,7 @@ namespace Scaler.Services
             }
             else
             {
-                metricValue = fnd.GrainCount == 0 || fnd.SiloCount == 1 ? 1 : fnd.SiloCount - 1;
+                metricValue = 1;//fnd.GrainCount == 0 || fnd.SiloCount == 1 ? 1 : fnd.SiloCount - 1;
             }
             // scale in (132 < 300)
             /*           if (grainsPerSilo < upperbound)
