@@ -30,22 +30,33 @@ namespace Scaler.Services
             var grainType = request.ScaledObjectRef.ScalerMetadata["graintype"];
             var siloNameFilter = request.ScaledObjectRef.ScalerMetadata["siloNameFilter"];
             var upperbound = Convert.ToInt32(request.ScaledObjectRef.ScalerMetadata["upperbound"]);
+            //var upperbound = 100;
+            var increaseSilos = await ShouldWeIncreaseSilos(grainType, siloNameFilter, upperbound);
+
             var fnd = await GetGrainCountInCluster(grainType, siloNameFilter);
             long grainsPerSilo = (fnd.GrainCount > 0 && fnd.SiloCount > 0) ? (fnd.GrainCount / fnd.SiloCount) : 0;
             long metricValue = fnd.SiloCount;
 
-            // scale in (132 < 300)
-            if (grainsPerSilo < upperbound)
-            {
-                metricValue = fnd.GrainCount == 0 ? 1 : Convert.ToInt16(fnd.GrainCount / upperbound);
-            }
-
-            // scale out (605 > 300)
-            if (grainsPerSilo >= upperbound)
+            if (increaseSilos)
             {
                 metricValue = fnd.SiloCount + 1;
             }
+            else
+            {
+                metricValue = fnd.GrainCount == 0 || fnd.SiloCount == 1 ? 1 : fnd.SiloCount - 1;
+            }
+            // scale in (132 < 300)
+            /*           if (grainsPerSilo < upperbound)
+                       {
+                           metricValue = fnd.GrainCount == 0 ? 1 : Convert.ToInt16(fnd.GrainCount / upperbound);
+                       }
 
+                       // scale out (605 > 300)
+                       if (grainsPerSilo >= upperbound)
+                       {
+                           metricValue = fnd.SiloCount + 1;
+                       }
+            */
             _logger.LogInformation($"Grains Per Silo: {grainsPerSilo}, Upper Bound: {upperbound}, Grain Count: {fnd.GrainCount}, Silo Count: {fnd.SiloCount}. Scale to {metricValue}.");
 
             response.MetricValues.Add(new MetricValue
@@ -138,6 +149,18 @@ namespace Scaler.Services
             var activeSiloCount = silos.Where(_ => _.SiloName.ToLower().Contains(siloNameFilter.ToLower())).Count();
             _logger.LogInformation($"Found {activeGrainsOfSpecifiedType.Count()} instances of {grainType} in cluster, with {activeSiloCount} '{siloNameFilter}' silos in the cluster hosting {grainType} grains.");
             return new GrainSaturationSummary(activeGrainsOfSpecifiedType.Count(), activeSiloCount);
+        }
+        
+        private async Task<bool> ShouldWeIncreaseSilos(string grainType, string siloNameFilter, int upperBound)
+        {
+            var detailedHosts = await _managementGrain.GetDetailedHosts();
+            var siloAddresses = detailedHosts.Where(x => x.Status == SiloStatus.Active && x.SiloName.Contains(siloNameFilter.ToLower()))
+                            .Select(y => y.SiloAddress);
+            var siloStats = await _managementGrain.GetRuntimeStatistics(siloAddresses.ToArray());
+            var IncreaseSilos = siloStats.Where(x => x.ActivationCount > upperBound).Count() == siloStats.Length;
+            
+            _logger.LogInformation($"Found {siloStats.Where(x => x.ActivationCount > 100).Count()} silos over the threshold out of {siloStats.Length} silos.");
+            return IncreaseSilos;
         }
     }
 
