@@ -37,7 +37,7 @@ namespace Scaler.Services
             long grainsPerSilo = (fnd.GrainCount > 0 && fnd.SiloCount > 0) ? (fnd.GrainCount / fnd.SiloCount) : 0;
             long metricValue = fnd.SiloCount;
 
-            if (increaseSilos)
+           /* if (increaseSilos)
             {
                 metricValue = fnd.SiloCount + 1;
             }
@@ -45,8 +45,9 @@ namespace Scaler.Services
             {
                 metricValue = 1;//fnd.GrainCount == 0 || fnd.SiloCount == 1 ? 1 : fnd.SiloCount - 1;
             }
+            */
             // scale in (132 < 300)
-            /*           if (grainsPerSilo < upperbound)
+                       if (grainsPerSilo < upperbound)
                        {
                            metricValue = fnd.GrainCount == 0 ? 1 : Convert.ToInt16(fnd.GrainCount / upperbound);
                        }
@@ -56,7 +57,7 @@ namespace Scaler.Services
                        {
                            metricValue = fnd.SiloCount + 1;
                        }
-            */
+            
             _logger.LogInformation($"Grains Per Silo: {grainsPerSilo}, Upper Bound: {upperbound}, Grain Count: {fnd.GrainCount}, Silo Count: {fnd.SiloCount}. Scale to {metricValue}.");
 
             response.MetricValues.Add(new MetricValue
