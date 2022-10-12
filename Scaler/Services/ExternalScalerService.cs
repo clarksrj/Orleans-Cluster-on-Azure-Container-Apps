@@ -160,7 +160,7 @@ namespace Scaler.Services
             var siloStats = await _managementGrain.GetRuntimeStatistics(siloAddresses.ToArray());
             var IncreaseSilos = siloStats.Where(x => x.ActivationCount > upperBound).Count() == siloStats.Length;
             
-            _logger.LogInformation($"Found {siloStats.Where(x => x.ActivationCount > upperbound).Count()} silos over the threshold out of {siloStats.Length} silos.");
+            _logger.LogInformation($"Found {siloStats.Where(x => x.ActivationCount > upperBound).Count()} silos over the threshold out of {siloStats.Length} silos.");
             return IncreaseSilos;
         }
     }
